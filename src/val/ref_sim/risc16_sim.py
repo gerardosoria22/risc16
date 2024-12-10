@@ -21,8 +21,6 @@ def main(args):
     sim = Risc16sim(args)
     sim.reset()
     sim.run(args.nsteps)
-    #print(sim.mem.mem)
-    #print(sim.args.stop_on_halt)
 
 
 if __name__ == "__main__":
