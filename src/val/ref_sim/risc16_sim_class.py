@@ -102,7 +102,7 @@ class Risc16sim:
         self.rf.reset()
         self.mem.reset()
         self.instr_p = 0
-        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_init_state.arch")
+        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_init.state")
 
     def run(self, steps):
         for i in range(steps):
@@ -114,7 +114,7 @@ class Risc16sim:
             print(f"Opcode: {instr.opcode.to_str} -- {instr.mnemonic.upper()}")
             if self._exec_instr(instr):  # if 1, it means halt
                 break
-        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_end_state.arch")
+        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_end.state")
 
     def _exec_instr(self, instr):
         mnemonic = instr.mnemonic
