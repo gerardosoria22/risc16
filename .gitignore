@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # Output files by risc16_sim
 *.state
+
+# Verilator output files
+obj_dir/
