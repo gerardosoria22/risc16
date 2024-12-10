@@ -1,8 +1,8 @@
 """_summary_
 """
 
-
-from risc16_ops import Risc16Op, Risc16OpRRR, Risc16OpRRI, Risc16OpRI, Risc16Opcodes
+import os
+from risc16_ops import Risc16Op, Risc16OpRRR, Risc16OpRRI, Risc16OpRI
 
 
 class RFModel:
@@ -26,18 +26,30 @@ class RFModel:
     def reset(self):
         self._rf = [0] * 7
 
+    def __str__(self):
+        """_summary_
+
+        Returns:
+            str: string representation of register file
+        """
+        retval = "---------Register File---------\n"
+        for i, reg in enumerate(self._rf):
+            retval += f"R{i+1}:{reg:04x}\n"
+        return retval
+
 
 class MEMModel:
     mem = {}
 
-    def __init__(self, args) -> None:
+    def __init__(self, args, name="Memory") -> None:
         self.args = args
+        self.name = name
 
     def read(self, addr):
         if addr not in self.mem:
-            print(f"Memory read -- addr: {addr} - val: 0x0000")
+            print(f"{self.name} read -- addr: {addr} - val: 0x0000")
             return 0
-        print(f"Memory read -- addr: {addr} - val: {self.mem[addr]:#06x}")
+        print(f"{self.name} read -- addr: {addr} - val: {self.mem[addr]:#06x}")
         return self.mem[addr]
 
     def write(self, addr, data):
@@ -45,7 +57,7 @@ class MEMModel:
             self.mem[addr] = data & 0xffff
         elif addr in self.mem:
             del self.mem[addr]
-        print(f"Memory write -- addr: {addr} - val: {data:#06x}")
+        print(f"{self.name} write -- addr: {addr} - val: {data:#06x}")
 
     def load_program(self):
         """_summary_
@@ -59,7 +71,20 @@ class MEMModel:
                     self.mem[addr] = line_val
                 addr += 1
 
+    def __str__(self):
+        """_summary_
+
+        Returns:
+            str: string representation of memory
+        """
+        retval = f"--------{self.name}--------\n"
+        for addr, data in self.mem.items():
+            retval += f"{addr:04x}:{data:04x}\n"
+        return retval
+
     def reset(self):
+        """_summary_
+        """
         self.load_program()
 
 
@@ -77,6 +102,7 @@ class Risc16sim:
         self.rf.reset()
         self.mem.reset()
         self.instr_p = 0
+        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_init_state.arch")
 
     def run(self, steps):
         for i in range(steps):
@@ -88,6 +114,7 @@ class Risc16sim:
             print(f"Opcode: {instr.opcode.to_str} -- {instr.mnemonic.upper()}")
             if self._exec_instr(instr):  # if 1, it means halt
                 break
+        self._dump_state(f"{os.path.basename(self.args.program_file).split('.')[0]}_end_state.arch")
 
     def _exec_instr(self, instr):
         mnemonic = instr.mnemonic
@@ -171,7 +198,22 @@ class Risc16sim:
         print(f"Next pc = {self.instr_p}")
         return 0
 
+    def _dump_state(self, filename):
+        with open(filename, 'w') as fp:
+            fp.write(f"PC:{self.instr_p}\n")
+            fp.write(str(self.rf))
+            fp.write(str(self.mem))
+
 
 def signed(uns_val, nbits=16):
+    """Function that returns a signed integer from a nbits unsigned integer
+
+    Args:
+        uns_val (int): unsigned integer to be interpeted as as nbit signed integer
+        nbits (int, optional): Number of bits to be used for interpreting the signed integer. Defaults to 16.
+
+    Returns:
+        int: The signed integer
+    """
     max_val = 2**nbits
     return (uns_val - max_val) if uns_val > ((max_val/2)-1) else uns_val
