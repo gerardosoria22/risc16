@@ -165,8 +165,9 @@ class Risc16sim:
         print(f"{instr}")
         if instr.pseudo == "halt":
             return 1
+        next_instr_p = self.rf.read(instr.regB)
         self.rf.write(instr.regA, self.instr_p + 1)
-        self.instr_p = self.rf.read(instr.regB)
+        self.instr_p = next_instr_p
         print(f"Next pc = {self.instr_p}")
         return 0
 
